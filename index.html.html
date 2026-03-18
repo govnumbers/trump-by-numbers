@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Trump Record — Accountability Tracker</title>
+<meta name="description" content="A data-driven tracker of Trump's record in office. Firings, legal cases, economy, foreign policy, and more. All sources linked.">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Georgia,serif;background:#f9f6f1;color:#1a1a1a;min-height:100vh}
+  a{color:#185FA5}
+  .container{max-width:860px;margin:0 auto;padding:2rem 1.25rem}
+  .hdr{border-bottom:3px solid #E24B4A;padding-bottom:1rem;margin-bottom:1.5rem}
+  .hdr h1{font-size:36px;font-weight:700;letter-spacing:1px;color:#1a1a1a}
+  .hdr h1 span{color:#E24B4A}
+  .hdr p{font-size:12px;color:#666;margin-top:6px;font-family:monospace}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem;transition:opacity .2s}
+  .stat{background:#fff;border:0.5px solid #ddd;border-radius:8px;padding:1rem;text-align:center}
+  .stat-n{font-size:26px;font-weight:700;color:#E24B4A;line-height:1.2}
+  .stat-l{font-size:11px;color:#666;margin-top:4px;line-height:1.4}
+  .tabs{display:flex;flex-wrap:wrap;gap:0;margin-bottom:1.5rem;border-bottom:1px solid #ddd}
+  .tab{padding:8px 14px;font-size:12px;cursor:pointer;border:none;background:transparent;color:#666;font-family:monospace;white-space:nowrap}
+  .tab.on{color:#E24B4A;border-bottom:2px solid #E24B4A;font-weight:600}
+  .tab:hover:not(.on){color:#1a1a1a}
+  .sec{display:none}.sec.on{display:block}
+  .card{border:0.5px solid #ddd;border-radius:10px;padding:1.25rem;margin-bottom:12px;background:#fff}
+  .badge{display:inline-block;font-size:10px;font-family:monospace;padding:2px 8px;border-radius:3px;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+  .b-red{background:#FCEBEB;color:#A32D2D}
+  .b-amber{background:#FAEEDA;color:#854F0B}
+  .b-pink{background:#FBEAF0;color:#993556}
+  .b-blue{background:#E6F1FB;color:#185FA5}
+  .b-teal{background:#E1F5EE;color:#0F6E56}
+  .card h3{font-size:15px;font-weight:600;margin-bottom:4px;color:#1a1a1a}
+  .big{font-size:30px;font-weight:700;color:#E24B4A;margin:6px 0;font-family:monospace}
+  .card p{font-size:13px;color:#555;line-height:1.6;margin-bottom:10px}
+  .foot{display:flex;justify-content:space-between;align-items:center;border-top:0.5px solid #eee;padding-top:8px}
+  .src{font-size:11px;font-family:monospace;color:#185FA5;text-decoration:none}
+  .src:hover{text-decoration:underline}
+  .shr{font-size:11px;font-family:monospace;padding:3px 10px;border:0.5px solid #ddd;border-radius:4px;cursor:pointer;background:transparent;color:#666}
+  .shr:hover{background:#f5f5f5}
+  .toast{position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;font-size:12px;font-family:monospace;padding:10px 16px;border-radius:4px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+  .toast.show{opacity:1}
+  .coffee{background:#fff;border:0.5px solid #ddd;border-radius:8px;padding:1rem;margin-top:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+  .coffee p{font-size:13px;color:#666}
+  .coffee a{background:#FAEEDA;color:#854F0B;border:none;border-radius:5px;padding:8px 16px;font-size:12px;font-family:monospace;font-weight:600;text-decoration:none;display:inline-block}
+  .footer{text-align:center;font-size:11px;font-family:monospace;color:#999;margin-top:2rem;padding-top:1rem;border-top:0.5px solid #ddd}
+  @media(max-width:500px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .hdr h1{font-size:26px}
+    .big{font-size:24px}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="hdr">
+    <h1>THE TRUMP <span>RECORD</span></h1>
+    <p>A data-driven accountability tracker &mdash; updated weekly &mdash; all sources linked</p>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="tabs">
+    <button class="tab on"  onclick="sw('firings',this)">Staffing Chaos</button>
+    <button class="tab" onclick="sw('legal',this)">Legal &amp; Controversies</button>
+    <button class="tab" onclick="sw('economy',this)">Economy</button>
+    <button class="tab" onclick="sw('foreign',this)">Foreign Policy</button>
+    <button class="tab" onclick="sw('epstein',this)">Epstein &amp; Scandals</button>
+  </div>
+  <div id="firings" class="sec on"></div>
+  <div id="legal" class="sec"></div>
+  <div id="economy" class="sec"></div>
+  <div id="foreign" class="sec"></div>
+  <div id="epstein" class="sec"></div>
+  <div class="coffee">
+    <p>This tracker is free &amp; independent. Support keeps it running.</p>
+    <!-- REPLACE with your Ko-fi or PayPal link -->
+    <a href="https://ko-fi.com/YOURNAME" target="_blank">Buy me a coffee ☕</a>
+  </div>
+  <div class="footer">The Trump Record &mdash; updated weekly &mdash; not affiliated with any political party</div>
+</div>
+<div class="toast" id="t">Copied to clipboard!</div>
+
+<script>
+  /* ============================================================
+     ONLY LINE YOU NEED TO EDIT:
+     Replace YOUR_SHEET_ID_HERE with your Google Sheet ID
+     (the long string in your Sheet URL between /d/ and /edit)
+  ============================================================ */
+  var SHEET_ID = '13bGNPFwEyP-kMkemkJzdNiBqO4ZZid8gun_QwgeBhQ4';
+
+  /* ── Internal state ─────────────────────────────────────── */
+  var statsData = {};
+  var currentTab = 'firings';
+
+  var TAB_KEYS    = ['firings','legal','economy','foreign','epstein'];
+  var SHEET_NAMES = ['Firings','Legal','Economy','Foreign','Epstein'];
+
+  /* ── Render stats bar for current tab ───────────────────── */
+  function renderStats(key) {
+    var s = document.getElementById('stats');
+    s.style.opacity = '0';
+    setTimeout(function() {
+      var d = statsData[key];
+      if (d) {
+        s.innerHTML =
+          '<div class="stat"><div class="stat-n">'+d.s1n+'</div><div class="stat-l">'+d.s1l+'</div></div>' +
+          '<div class="stat"><div class="stat-n">'+d.s2n+'</div><div class="stat-l">'+d.s2l+'</div></div>' +
+          '<div class="stat"><div class="stat-n">'+d.s3n+'</div><div class="stat-l">'+d.s3l+'</div></div>';
+      }
+      s.style.opacity = '1';
+    }, 150);
+  }
+
+  /* ── Render cards for a tab ─────────────────────────────── */
+  function renderCards(key, rows) {
+    document.getElementById(key).innerHTML = rows.map(function(r) {
+      var shareText = (r.share + ' — trumprecord.com').replace(/'/g, "&#39;");
+      return '<div class="card">' +
+        '<span class="badge ' + r.badge + '">' + r.badgeText + '</span>' +
+        '<h3>' + r.title + '</h3>' +
+        '<div class="big">' + r.number + '</div>' +
+        '<p>' + r.desc + '</p>' +
+        '<div class="foot">' +
+          '<a class="src" href="' + r.url + '" target="_blank" rel="noopener">Source: ' + r.source + '</a>' +
+          '<button class="shr" onclick="cp(\'' + shareText + '\')">Share</button>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  /* ── Parse CSV from Google Sheets ───────────────────────── */
+  function parseCSV(csv) {
+    var lines = csv.trim().split('\n').slice(1); // skip header row
+    return lines.filter(function(l) { return l.trim(); }).map(function(line) {
+      var cols = [], cur = '', inQ = false;
+      for (var i = 0; i < line.length; i++) {
+        var ch = line[i];
+        if (ch === '"') { inQ = !inQ; }
+        else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+        else { cur += ch; }
+      }
+      cols.push(cur.trim());
+      return {
+        badge:     cols[0] || 'b-red',
+        badgeText: cols[1] || '',
+        title:     cols[2] || '',
+        number:    cols[3] || '',
+        desc:      cols[4] || '',
+        source:    cols[5] || '',
+        url:       cols[6] || '#',
+        share:     cols[7] || ''
+      };
+    });
+  }
+
+  /* ── Fetch one sheet tab by name ────────────────────────── */
+  function fetchTab(sheetName) {
+    return fetch('https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=' + sheetName)
+      .then(function(r) { return r.text(); });
+  }
+
+  /* ── Load everything from Google Sheets ─────────────────── */
+  function loadAll() {
+    // Load Stats tab first
+    fetchTab('Stats').then(function(csv) {
+      var rows = parseCSV(csv);
+      rows.forEach(function(r) {
+        // Stats tab columns: tab, stat1_number, stat1_label, stat2_number, stat2_label, stat3_number, stat3_label
+        statsData[r.badge] = { // badge col = tab name in Stats sheet
+          s1n: r.badgeText, s1l: r.title,
+          s2n: r.number,    s2l: r.desc,
+          s3n: r.source,    s3l: r.url
+        };
+      });
+      renderStats(currentTab);
+    }).catch(function() {
+      console.warn('Could not load Stats tab');
+    });
+
+    // Load card tabs
+    TAB_KEYS.forEach(function(key, i) {
+      fetchTab(SHEET_NAMES[i]).then(function(csv) {
+        renderCards(key, parseCSV(csv));
+      }).catch(function() {
+        console.warn('Could not load tab: ' + SHEET_NAMES[i]);
+      });
+    });
+  }
+
+  /* ── Tab switching ──────────────────────────────────────── */
+  function sw(id, btn) {
+    document.querySelectorAll('.sec').forEach(function(s) { s.classList.remove('on'); });
+    document.querySelectorAll('.tab').forEach(function(b) { b.classList.remove('on'); });
+    document.getElementById(id).classList.add('on');
+    btn.classList.add('on');
+    currentTab = id;
+    renderStats(id);
+  }
+
+  /* ── Share / copy to clipboard ──────────────────────────── */
+  function cp(txt) {
+    navigator.clipboard.writeText(txt).catch(function() {});
+    var t = document.getElementById('t');
+    t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 2500);
+  }
+
+  /* ── Boot ───────────────────────────────────────────────── */
+  loadAll();
+</script>
+</body>
+</html>
