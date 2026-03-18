@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Trump Record — Accountability Tracker</title>
+<title>Trump by Numbers — Accountability Tracker</title>
 <meta name="description" content="A data-driven tracker of Trump's record in office. Firings, legal cases, economy, foreign policy, and more. All sources linked.">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -54,7 +54,7 @@
 <body>
 <div class="container">
   <div class="hdr">
-    <h1>THE TRUMP <span>RECORD</span></h1>
+    <h1>TRUMP <span>BY NUMBERS</span></h1>
     <p>A data-driven accountability tracker &mdash; updated weekly &mdash; all sources linked</p>
   </div>
   <div class="stats" id="stats"></div>
@@ -75,7 +75,7 @@
     <!-- REPLACE with your Ko-fi or PayPal link -->
     <a href="https://ko-fi.com/YOURNAME" target="_blank">Buy me a coffee ☕</a>
   </div>
-  <div class="footer">The Trump Record &mdash; updated weekly &mdash; not affiliated with any political party</div>
+  <div class="footer">Trump by Numbers &mdash; updated weekly &mdash; not affiliated with any political party</div>
 </div>
 <div class="toast" id="t">Copied to clipboard!</div>
 
@@ -113,7 +113,7 @@
   /* ── Render cards for a tab ─────────────────────────────── */
   function renderCards(key, rows) {
     document.getElementById(key).innerHTML = rows.map(function(r) {
-      var shareText = (r.share + ' — trumprecord.com').replace(/'/g, "&#39;");
+      var shareText = (r.share + ' — trumpbynumbers.com').replace(/'/g, "&#39;");
       return '<div class="card">' +
         '<span class="badge ' + r.badge + '">' + r.badgeText + '</span>' +
         '<h3>' + r.title + '</h3>' +
@@ -153,8 +153,12 @@
 
   /* ── Fetch one sheet tab by name ────────────────────────── */
   function fetchTab(sheetName) {
-    return fetch('https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=' + sheetName)
-      .then(function(r) { return r.text(); });
+    var url = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(sheetName);
+    return fetch(url, {mode: 'cors', cache: 'no-cache'})
+      .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      });
   }
 
   /* ── Load everything from Google Sheets ─────────────────── */
@@ -178,9 +182,14 @@
     // Load card tabs
     TAB_KEYS.forEach(function(key, i) {
       fetchTab(SHEET_NAMES[i]).then(function(csv) {
-        renderCards(key, parseCSV(csv));
-      }).catch(function() {
-        console.warn('Could not load tab: ' + SHEET_NAMES[i]);
+        var rows = parseCSV(csv);
+        if (rows.length === 0) {
+          document.getElementById(key).innerHTML = '<p style="color:#999;font-family:monospace;font-size:12px;padding:1rem">No data found in ' + SHEET_NAMES[i] + ' tab.</p>';
+        } else {
+          renderCards(key, rows);
+        }
+      }).catch(function(err) {
+        document.getElementById(key).innerHTML = '<p style="color:#A32D2D;font-family:monospace;font-size:12px;padding:1rem">Could not load data: ' + err.message + '</p>';
       });
     });
   }
